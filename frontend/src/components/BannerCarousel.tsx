@@ -87,7 +87,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ onSelectCategory
             </button>
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-200">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>100% Flipkart Assured</span>
+              <span>100% Quality Assured</span>
             </div>
           </div>
         </div>

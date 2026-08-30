@@ -537,7 +537,7 @@ class Command(BaseCommand):
                 product=product,
                 user_name='Rahul Sharma',
                 rating=5,
-                comment=f"Extremely satisfied with the {product.name}! Fast delivery and authentic Flipkart product."
+                comment=f"Extremely satisfied with the {product.name}! Fast delivery and authentic product."
             )
             Review.objects.create(
                 product=product,

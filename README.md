@@ -1,6 +1,6 @@
-# Flipkart-Inspired Full-Stack E-Commerce Platform
+# Modern Full-Stack E-Commerce Platform
 
-A feature-rich, full-stack E-Commerce application inspired by **Flipkart**. Built with a **Django REST Framework** backend and a responsive **React + TypeScript + Vite + Tailwind CSS** frontend.
+A feature-rich, full-stack E-Commerce application. Built with a **Django REST Framework** backend and a responsive **React + TypeScript + Vite + Tailwind CSS** frontend.
 
 ---
 

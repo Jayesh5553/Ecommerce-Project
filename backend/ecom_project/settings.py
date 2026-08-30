@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-flipkart-ecommerce-secret-key-2026-super-secure')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ecommerce-platform-secret-key-2026-super-secure')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 

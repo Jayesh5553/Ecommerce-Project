@@ -176,7 +176,7 @@ export const AuthModal: React.FC = () => {
             </div>
 
             <p className="text-[10px] text-gray-500 leading-tight">
-              By continuing, you agree to Flipkart's <a href="#" className="text-fk-blue font-semibold">Terms of Use</a> and <a href="#" className="text-fk-blue font-semibold">Privacy Policy</a>.
+              By continuing, you agree to the <a href="#" className="text-fk-blue font-semibold">Terms of Use</a> and <a href="#" className="text-fk-blue font-semibold">Privacy Policy</a>.
             </p>
 
             <button
@@ -196,7 +196,7 @@ export const AuthModal: React.FC = () => {
               disabled={isLoading}
               className="text-xs font-bold text-fk-blue hover:underline disabled:opacity-50"
             >
-              {isSignUp ? 'Existing User? Log in' : 'New to Flipkart? Create an account'}
+              {isSignUp ? 'Existing User? Log in' : 'New user? Create an account'}
             </button>
           </div>
 

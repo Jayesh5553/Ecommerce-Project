@@ -32,7 +32,7 @@ export const Footer: React.FC = () => {
             <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
             <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-            <li><a href="#" className="hover:text-white transition-colors">Flipkart Stories</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Our Stories</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
           </ul>
         </div>
@@ -70,7 +70,7 @@ export const Footer: React.FC = () => {
         <div className="col-span-2 md:col-span-1 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6">
           <h5 className="text-gray-200 font-bold uppercase tracking-wider mb-3 text-[11px]">Mail Us:</h5>
           <p className="leading-relaxed text-gray-400 mb-4">
-            Flipkart Internet Private Limited,<br/>
+            E-Commerce Internet Private Limited,<br/>
             Buildings Alyssa, Begonia & Clove Embassy Tech Village,<br/>
             Bengaluru, 560103, Karnataka, India
           </p>

@@ -131,7 +131,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, o
             <span className="text-xs text-gray-500 font-semibold">{product.review_count} Ratings & Reviews</span>
 
             <div className="inline-flex items-center gap-1 text-xs font-extrabold text-fk-blue italic bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-sm">
-              <span>Flipkart Assured</span>
+              <span>Quality Assured</span>
               <CheckCircle2 className="w-3.5 h-3.5 text-fk-blue fill-fk-yellow" />
             </div>
           </div>
@@ -162,7 +162,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, o
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-emerald-600 text-white text-[9px] font-bold px-1 rounded mt-0.5">CASHBACK</span>
-                <span><strong>5% Unlimited Cashback</strong> on Flipkart Axis Bank Credit Card</span>
+                <span><strong>5% Unlimited Cashback</strong> on Axis Bank Credit Card</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-emerald-600 text-white text-[9px] font-bold px-1 rounded mt-0.5">SPECIAL</span>

@@ -16,7 +16,7 @@ export const OrderSuccessPage: React.FC<OrderSuccessPageProps> = ({ order, onNav
         </div>
         <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Order Placed Successfully!</h1>
         <p className="text-xs text-gray-500 mb-3">
-          Thank you for shopping with Flipkart. We've sent a confirmation email & SMS.
+          Thank you for shopping with us. We've sent a confirmation email & SMS.
         </p>
         <div className="inline-block bg-blue-50 border border-blue-200 px-4 py-1.5 rounded text-xs font-bold text-fk-blue">
           Order ID: <span className="font-mono text-gray-900">{order.order_id}</span>
