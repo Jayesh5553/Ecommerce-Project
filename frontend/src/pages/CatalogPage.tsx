@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Category, FilterState } from '../types';
 import { FilterSidebar } from '../components/FilterSidebar';
 import { ProductCard } from '../components/ProductCard';
@@ -31,6 +31,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
     sort: 'popularity',
     dealOnly: false,
   });
+
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: selectedCategory,
+      query: searchQuery,
+    }));
+  }, [selectedCategory, searchQuery]);
 
   const availableBrands = useMemo(() => {
     const set = new Set<string>();

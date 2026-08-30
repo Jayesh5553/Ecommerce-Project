@@ -2,6 +2,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem } from '../types';
 import { cartService } from '../services/api';
 
+export interface ToastData {
+  message: string;
+  type: 'success' | 'error' | 'warning';
+}
+
 interface CartContextType {
   items: CartItem[];
   wishlist: Product[];
@@ -17,8 +22,9 @@ interface CartContextType {
   clearCart: () => void;
   toggleWishlist: (product: Product) => void;
   isInWishlist: (productId: number) => boolean;
+  toast: ToastData | null;
   toastMessage: string | null;
-  showToast: (msg: string) => void;
+  showToast: (msg: string, type?: 'success' | 'error' | 'warning') => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,7 +40,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastData | null>(null);
 
   useEffect(() => {
     localStorage.setItem('cart_items', JSON.stringify(items));
@@ -44,12 +50,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('wishlist_items', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
+  const showToast = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToast({ message: msg, type });
     setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+      setToast(null);
+    }, 3500);
   };
+
+  // Global listeners for 500 server errors & network errors dispatched by API interceptors
+  useEffect(() => {
+    const handleServerError = (e: any) => {
+      const msg = e.detail?.message || 'Server encountered an internal error (500). Please try again.';
+      showToast(msg, 'error');
+    };
+
+    const handleNetworkError = (e: any) => {
+      const msg = e.detail?.message || 'Cannot connect to backend server. Please verify the server is running.';
+      showToast(msg, 'error');
+    };
+
+    window.addEventListener('app:server-error', handleServerError);
+    window.addEventListener('app:network-error', handleNetworkError);
+
+    return () => {
+      window.removeEventListener('app:server-error', handleServerError);
+      window.removeEventListener('app:network-error', handleNetworkError);
+    };
+  }, []);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setItems((prev) => {
@@ -129,7 +156,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         toggleWishlist,
         isInWishlist,
-        toastMessage,
+        toast,
+        toastMessage: toast?.message || null,
         showToast,
       }}
     >

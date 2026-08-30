@@ -28,23 +28,34 @@ export const App: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setServerError(null);
+    try {
+      const [cats, prods] = await Promise.all([
+        productService.getCategories(),
+        productService.getProducts(),
+      ]);
+      setCategories(cats);
+      setProducts(prods);
+    } catch (err: any) {
+      console.error('Failed to load backend data:', err);
+      const status = err.response?.status;
+      if (status >= 500) {
+        setServerError(`Server Error (${status}): Could not load catalog data from the backend.`);
+      } else if (!err.response) {
+        setServerError('Network Error: Unable to connect to the backend server. Please verify the Django server is running.');
+      } else {
+        setServerError('An unexpected error occurred while loading catalog data.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [cats, prods] = await Promise.all([
-          productService.getCategories(),
-          productService.getProducts(),
-        ]);
-        setCategories(cats);
-        setProducts(prods);
-      } catch (err) {
-        console.error('Failed to load backend data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
 
@@ -85,6 +96,21 @@ export const App: React.FC = () => {
             currentPage={currentPage}
           />
           <main className="flex-1">
+            {serverError && (
+              <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-xs text-red-700 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold">⚠️ Warning:</span>
+                  <span>{serverError}</span>
+                </div>
+                <button
+                  onClick={fetchData}
+                  className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-bold transition-colors shadow-sm"
+                >
+                  Retry Connection
+                </button>
+              </div>
+            )}
+
             {loading ? (
               <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-12 h-12 border-4 border-fk-blue border-t-transparent rounded-full animate-spin mb-4" />

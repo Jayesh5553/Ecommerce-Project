@@ -2,11 +2,22 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { authService } from '../services/api';
 
+export interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (credentials: any) => Promise<boolean>;
-  register: (userData: any) => Promise<boolean>;
+  login: (credentials: { username: string; password: string }) => Promise<AuthResult>;
+  register: (userData: {
+    username: string;
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+  }) => Promise<AuthResult>;
   logout: () => void;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
@@ -26,40 +37,121 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (profile) {
           setUser(profile);
         } else {
-          setUser({ id: 1, username: 'Jayesh (Member)', email: 'jayesh@flipkart.com', first_name: 'Jayesh' });
+          // Token is expired or invalid
+          authService.logout();
+          setUser(null);
         }
+      } else {
+        setUser(null);
       }
     };
     fetchUser();
   }, []);
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: { username: string; password: string }): Promise<AuthResult> => {
     try {
-      await authService.login(credentials);
+      const authData = await authService.login(credentials);
+      if (!authData || !authData.access) {
+        authService.logout();
+        setUser(null);
+        return { success: false, error: 'Authentication failed. No access token received.' };
+      }
+
       const profile = await authService.getProfile();
       if (profile) {
         setUser(profile);
       } else {
-        setUser({ id: 1, username: credentials.username || 'User', email: 'user@example.com' });
+        setUser({
+          id: 1,
+          username: credentials.username,
+          email: '',
+        });
       }
       setShowAuthModal(false);
-      return true;
-    } catch (err) {
-      setUser({ id: 1, username: credentials.username || 'Demo User', email: 'user@flipkart.com' });
-      setShowAuthModal(false);
-      return true;
+      return { success: true };
+    } catch (err: any) {
+      authService.logout();
+      setUser(null);
+
+      const status = err.response?.status;
+      const data = err.response?.data;
+
+      if (status >= 500) {
+        return {
+          success: false,
+          error: `Server Error (${status}): The authentication service encountered an internal error. Please try again later.`,
+        };
+      }
+
+      if (!err.response && err.request) {
+        return {
+          success: false,
+          error: 'Network Error: Unable to connect to the backend server. Please verify your connection or server status.',
+        };
+      }
+
+      let errorMsg = 'Invalid username or password.';
+      if (data) {
+        if (typeof data === 'string' && !data.includes('<!DOCTYPE') && !data.includes('<html>')) {
+          errorMsg = data;
+        } else if (data.detail) {
+          errorMsg = data.detail;
+        } else if (data.non_field_errors) {
+          errorMsg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        }
+      }
+      return { success: false, error: errorMsg };
     }
   };
 
-  const register = async (userData: any) => {
+  const register = async (userData: {
+    username: string;
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+  }): Promise<AuthResult> => {
     try {
       await authService.register(userData);
-      await login({ username: userData.username, password: userData.password });
-      return true;
-    } catch (err) {
-      setUser({ id: 1, username: userData.username, email: userData.email });
-      setShowAuthModal(false);
-      return true;
+      return await login({ username: userData.username, password: userData.password });
+    } catch (err: any) {
+      authService.logout();
+      setUser(null);
+
+      const status = err.response?.status;
+      const data = err.response?.data;
+
+      if (status >= 500) {
+        return {
+          success: false,
+          error: `Server Error (${status}): Registration service encountered an internal error. Please try again later.`,
+        };
+      }
+
+      if (!err.response && err.request) {
+        return {
+          success: false,
+          error: 'Network Error: Unable to connect to the backend server. Please verify your connection or server status.',
+        };
+      }
+
+      let errorMsg = 'Registration failed. Please check the entered details.';
+      if (data) {
+        if (typeof data === 'string' && !data.includes('<!DOCTYPE') && !data.includes('<html>')) {
+          errorMsg = data;
+        } else if (data.username) {
+          errorMsg = Array.isArray(data.username) ? data.username[0] : data.username;
+        } else if (data.email) {
+          errorMsg = Array.isArray(data.email) ? data.email[0] : data.email;
+        } else if (data.password) {
+          errorMsg = Array.isArray(data.password) ? data.password[0] : data.password;
+        } else if (data.detail) {
+          errorMsg = data.detail;
+        } else if (data.non_field_errors) {
+          errorMsg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        }
+      }
+      return { success: false, error: errorMsg };
     }
   };
 

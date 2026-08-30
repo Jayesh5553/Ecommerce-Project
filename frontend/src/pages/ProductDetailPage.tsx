@@ -31,25 +31,35 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, o
 
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reviewerName || !reviewComment) return;
+    if (!reviewerName.trim() || !reviewComment.trim()) return;
 
     try {
       const newRev = await productService.addReview(product.id, {
-        user_name: reviewerName,
+        user_name: reviewerName.trim(),
         rating: reviewRating,
-        comment: reviewComment,
+        comment: reviewComment.trim(),
       });
       setReviewsList([newRev, ...reviewsList]);
-    } catch (err) {
-      setReviewsList([
-        { id: Date.now(), user_name: reviewerName, rating: reviewRating, comment: reviewComment, created_at: new Date().toISOString() },
-        ...reviewsList,
-      ]);
+      setReviewerName('');
+      setReviewComment('');
+      showToast('Review submitted successfully!', 'success');
+    } catch (err: any) {
+      const status = err.response?.status;
+      if (status >= 500) {
+        showToast(`Server Error (${status}): Failed to save review. Please try again later.`, 'error');
+      } else if (!err.response) {
+        showToast('Network Error: Cannot connect to server to submit review.', 'error');
+      } else {
+        // Fallback local addition for offline demo mode
+        setReviewsList([
+          { id: Date.now(), user_name: reviewerName, rating: reviewRating, comment: reviewComment, created_at: new Date().toISOString() },
+          ...reviewsList,
+        ]);
+        setReviewerName('');
+        setReviewComment('');
+        showToast('Review saved locally!', 'warning');
+      }
     }
-
-    setReviewerName('');
-    setReviewComment('');
-    showToast('Review submitted successfully!');
   };
 
   return (

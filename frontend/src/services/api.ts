@@ -10,7 +10,6 @@ const api = axios.create({
   },
 });
 
-
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -18,6 +17,73 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // 1. Handle 401 token expiration and refresh
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/auth/login/') &&
+      !originalRequest.url?.includes('/auth/register/') &&
+      !originalRequest.url?.includes('/auth/token/refresh/')
+    ) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        try {
+          const res = await axios.post('/api/auth/token/refresh/', { refresh: refreshToken });
+          if (res.data.access) {
+            localStorage.setItem('access_token', res.data.access);
+            originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
+            return api(originalRequest);
+          }
+        } catch (refreshErr) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+        }
+      } else {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      }
+    }
+
+    // 2. Handle 500 Internal Server Errors & 5xx server issues
+    if (error.response?.status && error.response.status >= 500) {
+      console.error(`[Server Error ${error.response.status}] Endpoint: ${originalRequest?.url}`, error.response.data);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:server-error', {
+            detail: {
+              status: error.response.status,
+              url: originalRequest?.url,
+              message: `Server Error (${error.response.status}): The server encountered an internal problem. Please try again.`,
+            },
+          })
+        );
+      }
+    } else if (!error.response && error.request) {
+      // 3. Handle Network Failure / Server Down (ECONNREFUSED)
+      console.error(`[Network Error] Could not connect to backend server for ${originalRequest?.url}`);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:network-error', {
+            detail: {
+              url: originalRequest?.url,
+              message: 'Unable to connect to backend server. Please verify the server is running.',
+            },
+          })
+        );
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export const productService = {
   getProducts: async (params?: Record<string, any>): Promise<Product[]> => {
@@ -115,9 +181,11 @@ export const orderService = {
 export const authService = {
   login: async (credentials: any) => {
     const response = await api.post('/auth/login/', credentials);
-    if (response.data.access) {
+    if (response.data && response.data.access) {
       localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
+      if (response.data.refresh) {
+        localStorage.setItem('refresh_token', response.data.refresh);
+      }
     }
     return response.data;
   },

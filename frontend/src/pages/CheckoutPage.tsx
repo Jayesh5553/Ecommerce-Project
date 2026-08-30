@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, CheckCircle2, CreditCard, Smartphone, Building, Banknote, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,17 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onOrderComplete }) =
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'Card' | 'NetBanking' | 'COD'>('UPI');
   const [upiId, setUpiId] = useState('jayesh@upi');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.first_name || user.username) {
+        setFullName(user.first_name || user.username);
+      }
+      if (user.email) {
+        setEmail(user.email);
+      }
+    }
+  }, [user]);
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();

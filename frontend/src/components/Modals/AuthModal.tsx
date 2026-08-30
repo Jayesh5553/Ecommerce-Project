@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, User, ShieldCheck } from 'lucide-react';
+import { X, Lock, Mail, User, ShieldCheck, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const AuthModal: React.FC = () => {
@@ -11,32 +11,60 @@ export const AuthModal: React.FC = () => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!showAuthModal) return null;
+
+  const handleClose = () => {
+    setShowAuthModal(false);
+    setErrorMsg('');
+  };
+
+  const handleToggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setErrorMsg('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
     if (isSignUp) {
-      if (!username || !password || !email) {
+      if (!username.trim() || !password || !email.trim()) {
         setErrorMsg('Please fill in all required fields');
         return;
       }
-      const success = await register({
-        username,
-        email,
-        password,
-        first_name: firstName,
-      });
-      if (!success) setErrorMsg('Registration failed. Please try again.');
+      setIsLoading(true);
+      try {
+        const result = await register({
+          username: username.trim(),
+          email: email.trim(),
+          password,
+          first_name: firstName.trim(),
+        });
+        if (!result.success) {
+          setErrorMsg(result.error || 'Registration failed. Please try again.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      if (!username || !password) {
+      if (!username.trim() || !password) {
         setErrorMsg('Please enter username and password');
         return;
       }
-      const success = await login({ username, password });
-      if (!success) setErrorMsg('Invalid credentials.');
+      setIsLoading(true);
+      try {
+        const result = await login({
+          username: username.trim(),
+          password,
+        });
+        if (!result.success) {
+          setErrorMsg(result.error || 'Invalid credentials.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -45,10 +73,10 @@ export const AuthModal: React.FC = () => {
       
       <div className="bg-white rounded-sm shadow-2xl overflow-hidden max-w-2xl w-full flex flex-col md:flex-row relative border border-gray-100">
         
-
         <button
-          onClick={() => setShowAuthModal(false)}
+          onClick={handleClose}
           className="absolute right-3 top-3 z-20 text-gray-400 hover:text-gray-800 p-1 rounded-full bg-white/80"
+          type="button"
         >
           <X className="w-5 h-5 stroke-[2.5]" />
         </button>
@@ -90,7 +118,8 @@ export const AuthModal: React.FC = () => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Enter your name"
-                    className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors"
+                    disabled={isLoading}
+                    className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -105,7 +134,8 @@ export const AuthModal: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter Username"
-                  className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors"
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors disabled:opacity-50"
                   required
                 />
               </div>
@@ -121,7 +151,8 @@ export const AuthModal: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter Email"
-                    className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors"
+                    disabled={isLoading}
+                    className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors disabled:opacity-50"
                     required
                   />
                 </div>
@@ -137,7 +168,8 @@ export const AuthModal: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter Password"
-                  className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors"
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-gray-200 focus:border-fk-blue outline-none transition-colors disabled:opacity-50"
                   required
                 />
               </div>
@@ -149,17 +181,20 @@ export const AuthModal: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3 bg-fk-orange hover:bg-orange-600 text-white font-extrabold text-xs uppercase rounded-sm shadow-md transition-transform active:scale-95 tracking-wider"
+              disabled={isLoading}
+              className="w-full py-3 bg-fk-orange hover:bg-orange-600 text-white font-extrabold text-xs uppercase rounded-sm shadow-md transition-transform active:scale-95 tracking-wider flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              {isSignUp ? 'CONTINUE' : 'LOGIN'}
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>{isLoading ? 'PLEASE WAIT...' : (isSignUp ? 'CONTINUE' : 'LOGIN')}</span>
             </button>
           </form>
 
     
           <div className="mt-6 pt-4 border-t border-gray-100 text-center">
             <button
-              onClick={() => { setIsSignUp(!isSignUp); setErrorMsg(''); }}
-              className="text-xs font-bold text-fk-blue hover:underline"
+              onClick={handleToggleMode}
+              disabled={isLoading}
+              className="text-xs font-bold text-fk-blue hover:underline disabled:opacity-50"
             >
               {isSignUp ? 'Existing User? Log in' : 'New to Flipkart? Create an account'}
             </button>
