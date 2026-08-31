@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -168,8 +169,8 @@ class CheckoutView(APIView):
         pincode = data.get('pincode', '400001')
         payment_method = data.get('payment_method', 'UPI')
 
-        total_mrp = 0
-        total_discount_price = 0
+        total_mrp = Decimal('0.00')
+        total_discount_price = Decimal('0.00')
         items_to_create = []
         if cart_items_data:
             for item in cart_items_data:
@@ -195,7 +196,7 @@ class CheckoutView(APIView):
                 items_to_create.append((item.product, item.quantity, item.product.discount_price))
 
         total_discount = total_mrp - total_discount_price
-        delivery_fee = 0.00 if total_discount_price >= 500 else 40.00
+        delivery_fee = Decimal('0.00') if total_discount_price >= Decimal('500.00') else Decimal('40.00')
         final_amount = total_discount_price + delivery_fee
 
         order = Order.objects.create(

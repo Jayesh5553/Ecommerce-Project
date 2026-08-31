@@ -9,11 +9,15 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProduct }) => {
-  const { addToCart, toggleWishlist, isInWishlist } = useCart();
+  const { items, addToCart, toggleWishlist, isInWishlist } = useCart();
   const isWishlisted = isInWishlist(product.id);
+  const isInCart = items.some((item) => item.product.id === product.id);
 
   return (
-    <div className="bg-white rounded-sm border border-gray-100 shadow-fk-card hover:shadow-fk-hover transition-all duration-200 flex flex-col justify-between group relative overflow-hidden">
+    <div 
+      onClick={() => onSelectProduct(product)}
+      className="bg-white rounded-md border border-gray-100 shadow-fk-card hover:shadow-fk-hover hover:border-gray-200 transition-all duration-200 flex flex-col justify-between group relative overflow-hidden cursor-pointer"
+    >
       <div className="p-3 pb-0 flex items-center justify-between z-10">
         <span className="text-[11px] font-extrabold text-fk-green bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-sm">
           {product.discount_percentage}% OFF
@@ -33,8 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
 
   
       <div 
-        onClick={() => onSelectProduct(product)}
-        className="cursor-pointer p-4 flex items-center justify-center h-48 sm:h-52 bg-white group-hover:scale-105 transition-transform duration-300 relative"
+        className="p-4 flex items-center justify-center h-48 sm:h-52 bg-white group-hover:scale-105 transition-transform duration-300 relative"
       >
         <img
           src={product.image_url}
@@ -44,14 +47,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
         />
       </div>
 
-      <div className="p-4 pt-1 flex-1 flex flex-col justify-between border-t border-gray-50 bg-white">
+      <div className="p-3 sm:p-4 pt-1 flex-1 flex flex-col justify-between border-t border-gray-50 bg-white">
         <div>
-      
           <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">
             {product.brand}
           </div>
           <h3 
-            onClick={() => onSelectProduct(product)}
             className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-2 hover:text-fk-blue cursor-pointer leading-snug mb-2"
           >
             {product.name}
@@ -69,25 +70,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
             </div>
           </div>
         </div>
-        <div className="pt-2 border-t border-gray-100 flex items-center justify-between mt-1">
-          <div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base sm:text-lg font-extrabold text-gray-900">
-                ₹{product.discount_price.toLocaleString('en-IN')}
-              </span>
-              <span className="text-xs text-gray-400 line-through font-normal">
-                ₹{product.price.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div className="text-[10px] font-bold text-fk-green">Free delivery</div>
+
+        <div className="pt-2.5 border-t border-gray-100 flex flex-col gap-2 mt-auto">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-extrabold text-gray-900">
+              ₹{product.discount_price.toLocaleString('en-IN')}
+            </span>
+            <span className="text-xs text-gray-400 line-through font-normal">
+              ₹{product.price.toLocaleString('en-IN')}
+            </span>
           </div>
 
           <button
-            onClick={() => addToCart(product)}
-            className="p-2 bg-fk-yellow hover:bg-yellow-400 text-fk-textDark rounded-sm shadow-sm transition-transform active:scale-90 flex items-center justify-center font-bold text-xs"
-            title="Add to Cart"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(product);
+            }}
+            className={`w-full py-2 px-3 rounded-sm font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all duration-150 active:scale-95 cursor-pointer uppercase tracking-wider ${
+              isInCart
+                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300'
+                : 'bg-fk-yellow hover:bg-[#f39700] text-fk-textDark border border-yellow-500/20 hover:shadow'
+            }`}
+            title={isInCart ? 'Already in Cart (Click to add another)' : 'Add to Cart'}
           >
             <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
+            <span>{isInCart ? 'Added (Add More)' : 'Add to Cart'}</span>
           </button>
         </div>
 
