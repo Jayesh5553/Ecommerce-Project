@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(max_length=200, unique=True)
     icon = models.CharField(max_length=50, default='Package')
     image_url = models.URLField(max_length=500, blank=True, null=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories')
@@ -20,7 +20,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(max_length=255, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     brand = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2) 

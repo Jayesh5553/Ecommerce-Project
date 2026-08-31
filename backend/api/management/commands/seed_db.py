@@ -523,7 +523,7 @@ class Command(BaseCommand):
             category_obj = cat_objs[cat_slug]
             
             product_name = pdata['name']
-            product_slug = slugify(product_name)
+            product_slug = slugify(product_name)[:250]
 
             product = Product.objects.create(
                 category=category_obj,
